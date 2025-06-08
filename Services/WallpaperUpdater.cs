@@ -702,7 +702,18 @@ namespace ArtfulWall.Services
                         (now - _lastUpdateTimes[g]).TotalSeconds >= GridUpdateIntervalSeconds
                       ).ToList();
             int maxCnt = Math.Min(due.Count, grids.Count / 4) + 1;
-            int cnt = due.Count <= 3 ? due.Count : Random.Shared.Next(3, maxCnt);
+            // ensure maxCnt is at least 4 before using it as an upper bound
+            int safeMax = maxCnt < 4 ? 3 : maxCnt;
+            int cnt;
+            if (due.Count <= 3)
+            {
+                cnt = due.Count;
+            }
+            else
+            {
+                // defensive: never pass a smaller upper bound than the lower bound
+                cnt = Random.Shared.Next(3, safeMax);
+            }
             return due.OrderBy(_ => Guid.NewGuid()).Take(cnt).ToList();
         }
 
