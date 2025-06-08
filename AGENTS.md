@@ -23,6 +23,7 @@ This repository contains **ArtfulWall**, a Windows-only wallpaper management too
 - If the build cannot be executed in the environment, still document the failure in the PR.
 
 ## Contribution Notes
-- Keep changes in a single commit; do not create new branches.
+- Small, focused fixes:Keep changes in a single commit; do not create new branches.
+- Large features or refactorings: Create a dedicated feature/* branch and commit in logical, incremental steps—this makes code review easier and preserves intermediate snapshots for rollback and debugging.
 - Summaries for PRs should mention key features or bug fixes. In the testing section include the `dotnet build` result.
 
