@@ -167,15 +167,20 @@ namespace ArtfulWall.Services
         {
             lock (_lruLock)
             {
+                int overflowCount = _imageCache.Count - _maxCacheSize;
+                if (overflowCount <= 0) return;
+
                 var itemsToRemove = _imageCache.Values
                     .OrderByDescending(item => item.Size) // 先按大小排序
                     .ThenBy(item => item.LastAccessTime) // 再按访问时间排序
-                    .TakeWhile(_ => _imageCache.Count > _maxCacheSize) // 选取足够数量的项目移除，以满足缓存大小限制
-                    .Select(item => item.Node?.Value).ToList();
+                    .Take(overflowCount) // 只移除超出部分
+                    .Select(item => item.Node?.Value)
+                    .Where(v => v != null)
+                    .ToList();
 
                 foreach (var key in itemsToRemove)
                 {
-                    if (_imageCache.TryRemove(key, out CacheItem? cacheItem))
+                    if (key != null && _imageCache.TryRemove(key, out CacheItem? cacheItem))
                     {
                         cacheItem.Image?.Dispose(); // 释放图像资源
                         _lruList.Remove(cacheItem.Node);
