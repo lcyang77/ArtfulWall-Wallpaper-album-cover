@@ -1,0 +1,39 @@
+;=== Common.iss ===
+; 公共定义与节
+#define MyAppName       "ArtfulWall"
+#define MyAppVersion    "2.0"
+#define MyAppPublisher  "Linus Yang"
+#define MyAppURL        "https://github.com/lcyang77/ArtfulWall-Wallpaper-album-cover"
+#define MyAppExeName    "ArtfulWall.exe"
+#define ProjectDir      "D:\\indie\\ArtfulWall_project\\MyWallpaperApp\\ArtfulWall2.1_Release"
+
+[Languages]
+Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "chinesesimplified"; MessagesFile: "compiler:Languages\\ChineseSimplified.isl"
+
+[Tasks]
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "startupicon"; Description: "开机自动启动"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+
+[Icons]
+; 主程序与卸载
+Name: "{group}\\{#MyAppName}"; Filename: "{app}\\{#MyAppExeName}"
+Name: "{group}\\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
+; 桌面与开机图标
+Name: "{autodesktop}\\{#MyAppName}"; Filename: "{app}\\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{commonstartup}\\{#MyAppName}"; Filename: "{app}\\{#MyAppExeName}"; Tasks: startupicon
+
+#ifdef REQUIRES_DOTNET
+; .NET 安装链接图标
+Name: "{group}\\{cm:InstallNetRuntime}"; Filename: "https://dotnet.microsoft.com/download/dotnet/7.0"; IconFilename: "{sys}\\shell32.dll"; IconIndex: 13
+#endif
+
+#ifdef STANDALONE
+[Run]
+Filename: "{app}\\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName,'&','&&')}}"; Flags: nowait postinstall skipifsilent
+#endif
+
+#ifdef REQUIRES_DOTNET
+[Run]
+Filename: "{app}\\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName,'&','&&')}}"; Flags: nowait postinstall skipifsilent; Check: IsDotNet7Installed
+#endif
