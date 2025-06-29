@@ -26,12 +26,8 @@ namespace ArtfulWall.Services
         private readonly int _maxCacheItems;
         private readonly Timer _cacheCleanupTimer;
 
-        /// <summary>
-        /// 构造 ImageManager 实例，指定最大缓存条目数及清理间隔。
-        /// 若传入 TimeSpan.Zero，则禁用周期性清理，仅在添加新项时驱逐。
-        /// </summary>
-        /// <param name="maxCacheItems">最大缓存条目数</param>
-        /// <param name="cacheCleanupInterval">缓存清理间隔，默认为 30 分钟；传入 TimeSpan.Zero 禁用周期清理</param>
+        // 构造 ImageManager 实例，指定最大缓存条目数及清理间隔
+        // 若传入 TimeSpan.Zero，则禁用周期性清理，仅在添加新项时驱逐
         public ImageManager(
             int maxCacheItems = 150,
             TimeSpan? cacheCleanupInterval = null)
@@ -50,9 +46,7 @@ namespace ArtfulWall.Services
             }
         }
 
-        /// <summary>
-        /// 获取或添加图像。若在缓存中，更新 LRU 并返回克隆；否则加载、缓存并返回新实例。
-        /// </summary>
+        // 获取或添加图像。若在缓存中，更新 LRU 并返回克隆；否则加载、缓存并返回新实例
         public async Task<Image<Rgba32>?> GetOrAddImageAsync(string path, Size size)
         {
             string key;
