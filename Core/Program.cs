@@ -50,9 +50,7 @@ namespace ArtfulWall.Core
         }
     }
 
-    /// <summary>
-    /// 托盘应用上下文，负责：显示托盘图标 → 异步初始化 → 初始化失败退出或继续加载菜单/业务 → 退出时统一取消 & 清理。
-    /// </summary>
+    // 托盘应用上下文，负责：显示托盘图标 → 异步初始化 → 初始化失败退出或继续加载菜单/业务 → 退出时统一取消 & 清理
     internal sealed class TrayAppContext : ApplicationContext
     {
         private readonly CancellationTokenSource _cts;
@@ -75,16 +73,14 @@ namespace ArtfulWall.Core
             _configPath = Path.Combine(roaming, "config.json");
             _backupPath = Path.Combine(roaming, Constants.BackupFileName);
 
-            // 1️⃣ 立即创建一个「正在启动」的托盘图标，确保 UI 可响应
+            // 1.立即创建一个「正在启动」的托盘图标，确保 UI 可响应
             InitializeTrayIconLoading(exeDir);
 
-            // 2️⃣ 异步跑真正的初始化流程，绝不阻塞 UI 线程
+            // 2.异步跑真正的初始化流程，绝不阻塞 UI 线程
             _ = InitializeAsync(exeDir);
         }
 
-        /// <summary>
-        /// 创建托盘图标并显示「启动中…」提示
-        /// </summary>
+        // 创建托盘图标并显示「启动中…」提示
         private void InitializeTrayIconLoading(string exeDir)
         {
             _trayIcon = new NotifyIcon
@@ -95,9 +91,7 @@ namespace ArtfulWall.Core
             };
         }
 
-        /// <summary>
-        /// 真正的初始化流程：配置准备 → 读取 & 校验 → 业务启动 → 菜单创建
-        /// </summary>
+        // 真正的初始化流程：配置准备 → 读取 & 校验 → 业务启动 → 菜单创建
         private async Task InitializeAsync(string exeDir)
         {
             try
@@ -402,7 +396,7 @@ namespace ArtfulWall.Core
 
         #endregion
 
-        /// <summary>退出时取消所有异步操作并释放资源。</summary>
+        // 退出时取消所有异步操作并释放资源
         protected override void ExitThreadCore()
         {
             _cts.Cancel();
