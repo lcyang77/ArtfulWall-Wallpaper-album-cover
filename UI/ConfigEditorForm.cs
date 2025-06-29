@@ -1,29 +1,26 @@
-//  ConfigEditorForm.cs
 using System;
 using System.IO;
 using System.Text.Json;
 using System.Windows.Forms;
 using System.Linq;
 using System.Collections.Generic;
-using ArtfulWall.Models; // Using the separated model
-using ArtfulWall.Services; // For WallpaperUpdater
-using ArtfulWall.Utils; // For DisplayManager
-using Size = System.Drawing.Size; // Alias for System.Drawing.Size
+using ArtfulWall.Models; // 使用分离的模型
+using ArtfulWall.Services; // 用于WallpaperUpdater
+using ArtfulWall.Utils; // 用于DisplayManager
+using Size = System.Drawing.Size; // System.Drawing.Size的别名
 
 namespace ArtfulWall.UI
 {
-    /// <summary>
-    /// 提供用于编辑应用程序配置的窗体。
-    /// </summary>
+    // 提供用于编辑应用程序配置的窗体
     public class ConfigEditorForm : Form
     {
-        private Configuration originalConfig; // Store the initial configuration for comparison
-        private Configuration currentConfig;  // Store the configuration being edited
+        private Configuration originalConfig; // 存储初始配置用于比较
+        private Configuration currentConfig;  // 存储正在编辑的配置
         private readonly string configPath;
-        private WallpaperUpdater? wallpaperUpdater; // Optional: For applying changes immediately
+        private WallpaperUpdater? wallpaperUpdater; // 可选：用于立即应用更改
         private List<DisplayInfo>? displayInfo; // 存储显示器信息
 
-        // UI Controls
+        // UI控件
         private readonly TextBox folderPathTextBox = new TextBox();
         private readonly Button browseButton = new Button { Text = "浏览..." };
         private readonly NumericUpDown widthNumericUpDown = new NumericUpDown { Maximum = 10000, Minimum = 1, Value = 1920 };
@@ -44,20 +41,14 @@ namespace ArtfulWall.UI
         private Dictionary<int, NumericUpDown> monitorRowsControls = new Dictionary<int, NumericUpDown>();
         private Dictionary<int, NumericUpDown> monitorColsControls = new Dictionary<int, NumericUpDown>();
 
-        /// <summary>
-        /// 指示配置自加载以来是否已更改并成功保存。
-        /// 此属性名已从 ConfigChangedSinceLoad 更改为 ConfigChanged 以解决 CS1061 错误。
-        /// </summary>
+        // 指示配置自加载以来是否已更改并成功保存
         public bool ConfigChanged { get; private set; } = false;
 
-        /// <summary>
-        /// 初始化 ConfigEditorForm 类的新实例。
-        /// </summary>
-        /// <param name="configFilePath">配置文件的路径。</param>
+        // 初始化ConfigEditorForm类的新实例
         public ConfigEditorForm(string configFilePath)
         {
             this.configPath = configFilePath;
-            // Initialize with default or empty config to avoid null issues before loading
+            // 使用默认或空配置初始化，避免加载前的空值问题
             this.currentConfig = new Configuration();
             this.originalConfig = this.currentConfig.Clone();
 
@@ -76,10 +67,7 @@ namespace ArtfulWall.UI
             LoadConfiguration();
         }
 
-        /// <summary>
-        /// 设置 WallpaperUpdater 实例，用于在保存后立即应用配置更改。
-        /// </summary>
-        /// <param name="updater">WallpaperUpdater 实例。</param>
+        // 设置WallpaperUpdater实例，用于在保存后立即应用配置更改
         public void SetWallpaperUpdater(WallpaperUpdater updater)
         {
             this.wallpaperUpdater = updater;
@@ -92,7 +80,7 @@ namespace ArtfulWall.UI
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.StartPosition = FormStartPosition.CenterScreen; // Center on parent or screen
+            this.StartPosition = FormStartPosition.CenterScreen; // 在父窗体或屏幕中央显示
             this.Padding = new Padding(10);
 
             var tableLayoutPanel = new TableLayoutPanel
@@ -101,22 +89,22 @@ namespace ArtfulWall.UI
                 RowCount = 12, // 增加行数以容纳新控件
                 Dock = DockStyle.Fill,
                 AutoSize = true,
-                CellBorderStyle = TableLayoutPanelCellBorderStyle.None, // Cleaner look
+                CellBorderStyle = TableLayoutPanelCellBorderStyle.None, // 更简洁的外观
             };
 
-            // Define column styles for better control
+            // 定义列样式以获得更好的控制
             tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 160F)); // 增加标签宽度
-            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));  // Input controls
-            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));       // Browse button
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));  // 输入控件
+            tableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));       // 浏览按钮
 
-            // Define row styles
+            // 定义行样式
             for (int i = 0; i < 10; i++) // 增加输入行数
                 tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
             tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 220F)); // 多显示器标签页占用更多空间
             tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 35F)); // 应用选项
             tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));      // 按钮行
 
-            // Helper to add controls
+            // 添加控件的辅助方法
             void AddControlRow(string labelText, Control control, int rowIndex, bool spanInput = true)
             {
                 var label = new Label { Text = labelText, TextAlign = System.Drawing.ContentAlignment.MiddleLeft, Dock = DockStyle.Fill, AutoSize = false };
@@ -125,18 +113,18 @@ namespace ArtfulWall.UI
                 tableLayoutPanel.Controls.Add(control, 1, rowIndex);
                 if (spanInput)
                 {
-                    tableLayoutPanel.SetColumnSpan(control, 2); // Span across input and button columns if no specific button for this row
+                    tableLayoutPanel.SetColumnSpan(control, 2); // 如果此行没有特定按钮，则跨越输入和按钮列
                 }
             }
 
-            // --- 封面图片路径 ---
-            AddControlRow("封面图片路径:", folderPathTextBox, 0, false); // Don't span, browse button is next
+            // 封面图片路径
+            AddControlRow("封面图片路径:", folderPathTextBox, 0, false); // 不跨列，浏览按钮在下一个位置
             browseButton.Dock = DockStyle.Fill;
-            browseButton.Margin = new Padding(3, 0, 0, 0); // Add some margin for the browse button
+            browseButton.Margin = new Padding(3, 0, 0, 0); // 为浏览按钮添加一些边距
             browseButton.Click += BrowseButton_Click;
             tableLayoutPanel.Controls.Add(browseButton, 2, 0);
 
-            // --- 基本控件 ---
+            // 基本控件
             AddControlRow("宽度 (像素):", widthNumericUpDown, 1);
             AddControlRow("高度 (像素):", heightNumericUpDown, 2);
             AddControlRow("行数:", rowsNumericUpDown, 3);
@@ -144,7 +132,7 @@ namespace ArtfulWall.UI
             AddControlRow("最小间隔 (秒):", minIntervalNumericUpDown, 5);
             AddControlRow("最大间隔 (秒):", maxIntervalNumericUpDown, 6);
 
-            // --- 壁纸模式选择 ---
+            // 壁纸模式选择
             wallpaperModeComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
             wallpaperModeComboBox.Items.AddRange(new object[] { 
                 "每显示器独立壁纸", 
@@ -154,39 +142,39 @@ namespace ArtfulWall.UI
             wallpaperModeComboBox.SelectedIndexChanged += WallpaperMode_Changed;
             AddControlRow("壁纸模式:", wallpaperModeComboBox, 7);
 
-            // --- DPI和自动调整选项 ---
+            // DPI和自动调整选项
             AddControlRow("DPI适配:", adaptToDpiCheckBox, 8);
             AddControlRow("显示器变更:", autoAdjustDisplayCheckBox, 9);
             
-            // --- 多显示器配置标签页 ---
+            // 多显示器配置标签页
             InitializeMonitorTabs();
             AddControlRow("显示器特定设置:", monitorTabControl, 10);
 
-            // --- 应用选项 ---
+            // 应用选项
             applyWithoutRestartCheckBox.Dock = DockStyle.Fill;
             applyWithoutRestartCheckBox.Padding = new Padding(0, 5, 0, 0);
             tableLayoutPanel.Controls.Add(applyWithoutRestartCheckBox, 0, 11);
             tableLayoutPanel.SetColumnSpan(applyWithoutRestartCheckBox, 3);
 
-            // --- 按钮面板 ---
+            // 按钮面板
             var buttonPanel = new FlowLayoutPanel
             {
                 FlowDirection = FlowDirection.RightToLeft,
-                Dock = DockStyle.Bottom, // Dock to the bottom of the form
+                Dock = DockStyle.Bottom, // 停靠到窗体底部
                 AutoSize = true,
                 AutoSizeMode = AutoSizeMode.GrowAndShrink,
-                Padding = new Padding(0, 10, 0, 0) // Top padding for separation
+                Padding = new Padding(0, 10, 0, 0) // 顶部填充用于分隔
             };
             confirmButton.Size = new Size(80, 28);
             cancelButton.Size = new Size(80, 28);
             confirmButton.Click += ConfirmButton_Click;
             cancelButton.Click += CancelButton_Click;
 
-            buttonPanel.Controls.Add(cancelButton); // Add cancel first for RightToLeft
+            buttonPanel.Controls.Add(cancelButton); // 由于RightToLeft，先添加取消按钮
             buttonPanel.Controls.Add(confirmButton);
 
             this.Controls.Add(tableLayoutPanel);
-            this.Controls.Add(buttonPanel); // Add button panel last so it's at the bottom
+            this.Controls.Add(buttonPanel); // 最后添加按钮面板，使其位于底部
         }
 
         private void InitializeMonitorTabs()
@@ -328,9 +316,9 @@ namespace ArtfulWall.UI
             {
                 if (!File.Exists(configPath))
                 {
-                    // Config file doesn't exist, use defaults and allow user to save a new one.
+                    // 配置文件不存在，使用默认设置并允许用户保存新文件
                     MessageBox.Show("配置文件不存在，将使用默认设置。您可以在保存时创建新的配置文件。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    currentConfig = new Configuration(); // Ensure it's a new default instance
+                    currentConfig = new Configuration(); // 确保是新的默认实例
                     originalConfig = currentConfig.Clone();
                     PopulateUIFromConfig(currentConfig);
                     return;
@@ -349,7 +337,7 @@ namespace ArtfulWall.UI
                     currentConfig = loadedConfig;
                 }
 
-                originalConfig = currentConfig.Clone(); // Store a copy of the originally loaded config
+                originalConfig = currentConfig.Clone(); // 存储原始加载配置的副本
                 PopulateUIFromConfig(currentConfig);
             }
             catch (JsonException jsonEx)
@@ -581,7 +569,7 @@ namespace ArtfulWall.UI
 
                 currentConfig = updatedConfig;
                 originalConfig = currentConfig.Clone();
-                ConfigChanged = true; // 更新属性名
+                ConfigChanged = true;
 
                 return true;
             }
@@ -618,7 +606,7 @@ namespace ArtfulWall.UI
                         }
                     }
 
-                    if (applyWithoutRestartCheckBox.Checked && wallpaperUpdater == null && ConfigChanged) // 使用更新后的属性名
+                    if (applyWithoutRestartCheckBox.Checked && wallpaperUpdater == null && ConfigChanged)
                     {
                         var restartResult = MessageBox.Show(
                             "配置已保存。部分更改可能需要重启应用程序才能生效。\n是否立即重启应用程序？",
@@ -637,7 +625,7 @@ namespace ArtfulWall.UI
                             this.DialogResult = DialogResult.OK;
                         }
                     }
-                    else if (appliedImmediately || !ConfigChanged) // 使用更新后的属性名
+                    else if (appliedImmediately || !ConfigChanged)
                     {
                         this.DialogResult = DialogResult.OK;
                     }
